@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: test-cicd-backend_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # SECURITY: In production, comment out 'ports' below to prevent external access
+    # Backend connects via Docker network, doesn't need exposed ports
+    # Port bound to 127.0.0.1 (localhost only) to prevent external network access
+    ports:
+      - "127.0.0.1:5432:5432"  # For development tools (Prisma Studio, pgAdmin)
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: test-cicd-backend_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    # Port bound to 127.0.0.1 (localhost only) for security
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: test-cicd-backend_mailhog
+    restart: unless-stopped
+    # Ports bound to 127.0.0.1 (localhost only) for security
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+
+networks:
+  default:
+    name: test-cicd-backend_network
+    driver: bridge
+    # For production: Add 'internal: true' to prevent external network access
+    # This blocks internet access but allows service-to-service communication

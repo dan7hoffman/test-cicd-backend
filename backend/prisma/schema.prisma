@@ -1,0 +1,107 @@
+// Database configuration
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User model with complete auth fields
+model User {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  passwordHash          String
+  firstName             String
+  lastName              String
+  role                  Role      @default(USER)
+
+  // Email verification
+  emailVerified         Boolean   @default(false)
+  emailVerifiedAt       DateTime?
+
+  // Account security
+  isActive              Boolean   @default(true)
+  lockedUntil           DateTime?
+  failedLoginAttempts   Int       @default(0)
+  lastFailedLoginAt     DateTime?
+
+  // 2FA
+  totpSecret            String?
+  totpEnabled           Boolean   @default(false)
+  totpBackupCodes       String[]  @default([])
+
+  // Metadata
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  lastLoginAt           DateTime?
+
+  // Relations
+  sessions              Session[]
+  verificationTokens    VerificationToken[]
+  passwordResetTokens   PasswordResetToken[]
+
+  @@index([email])
+}
+
+// Session model (Copenhagen Book pattern)
+model Session {
+  id                String    @id @default(cuid())
+  userId            String
+  token             String    @unique  // Session token (hashed with SHA-256)
+  expiresAt         DateTime
+  ipAddress         String
+  userAgent         String
+  createdAt         DateTime  @default(now())
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// Email verification and other token types
+model VerificationToken {
+  id                String    @id @default(cuid())
+  userId            String
+  token             String    @unique  // Token (hashed with SHA-256)
+  type              TokenType
+  expiresAt         DateTime
+  createdAt         DateTime  @default(now())
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// Password reset tokens
+model PasswordResetToken {
+  id                String    @id @default(cuid())
+  userId            String
+  token             String    @unique  // Reset token (hashed with SHA-256)
+  expiresAt         DateTime
+  usedAt            DateTime?
+  createdAt         DateTime  @default(now())
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
