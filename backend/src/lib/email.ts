@@ -1,17 +1,22 @@
 import nodemailer from 'nodemailer';
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'localhost',
-  port: parseInt(process.env.SMTP_PORT || '1025'),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: process.env.SMTP_USER
-    ? {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      }
-    : undefined,
-});
+// Create transporter (use test account in test mode to avoid actual email sending)
+const transporter =
+  process.env.NODE_ENV === 'test'
+    ? nodemailer.createTransport({
+        jsonTransport: true, // Returns JSON instead of sending emails
+      })
+    : nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'localhost',
+        port: parseInt(process.env.SMTP_PORT || '1025'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: process.env.SMTP_USER
+          ? {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            }
+          : undefined,
+      });
 
 const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@example.com';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:4200';
