@@ -148,16 +148,16 @@ if (process.env.NODE_ENV !== 'test') {
   // Session and token cleanup job - runs every hour
   const cleanupInterval = setInterval(async () => {
   try {
-    const sessions = await cleanupExpiredSessions();
-    const tokens = await cleanupExpiredTokens();
+    const sessionsDeleted = await cleanupExpiredSessions();
+    const tokensDeleted = await cleanupExpiredTokens();
 
-    const totalCleaned = sessions + tokens.verificationTokens + tokens.passwordResetTokens;
+    const totalCleaned = sessionsDeleted + tokensDeleted.verificationTokens + tokensDeleted.passwordResetTokens;
     if (totalCleaned > 0) {
       logger.info('Cleanup completed', {
-        sessions,
-        verificationTokens: tokens.verificationTokens,
-        passwordResetTokens: tokens.passwordResetTokens,
-        total: totalCleaned,
+        sessionsDeleted,
+        verificationTokensDeleted: tokensDeleted.verificationTokens,
+        passwordResetTokensDeleted: tokensDeleted.passwordResetTokens,
+        totalDeleted: totalCleaned,
       });
     }
   } catch (error) {
@@ -172,13 +172,13 @@ if (process.env.NODE_ENV !== 'test') {
 
     // Final cleanup before shutdown
     try {
-      const sessions = await cleanupExpiredSessions();
-      const tokens = await cleanupExpiredTokens();
+      const sessionsDeleted = await cleanupExpiredSessions();
+      const tokensDeleted = await cleanupExpiredTokens();
 
       logger.info('Final cleanup completed', {
-        sessions,
-        verificationTokens: tokens.verificationTokens,
-        passwordResetTokens: tokens.passwordResetTokens,
+        sessionsDeleted,
+        verificationTokensDeleted: tokensDeleted.verificationTokens,
+        passwordResetTokensDeleted: tokensDeleted.passwordResetTokens,
       });
     } catch (error) {
       logger.error('Final cleanup error', { error });

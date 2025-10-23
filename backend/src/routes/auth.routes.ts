@@ -64,6 +64,7 @@ router.patch(
 router.delete(
   '/account',
   csrfProtection,
+  authRateLimit, // Prevent abuse of account deletion
   requireAuth,
   authController.deleteAccount.bind(authController)
 );
