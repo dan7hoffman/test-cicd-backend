@@ -134,18 +134,19 @@ app.use(notFoundHandler);
 // Global error handler (must be last)
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  logger.info('Server started', {
-    port: PORT,
-    healthCheck: `http://localhost:${PORT}/health`,
-    authEndpoints: `http://localhost:${PORT}/api/auth/*`,
-    environment: process.env.NODE_ENV || 'development',
+// Start server (skip during tests)
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info('Server started', {
+      port: PORT,
+      healthCheck: `http://localhost:${PORT}/health`,
+      authEndpoints: `http://localhost:${PORT}/api/auth/*`,
+      environment: process.env.NODE_ENV || 'development',
+    });
   });
-});
 
-// Session and token cleanup job - runs every hour
-const cleanupInterval = setInterval(async () => {
+  // Session and token cleanup job - runs every hour
+  const cleanupInterval = setInterval(async () => {
   try {
     const sessions = await cleanupExpiredSessions();
     const tokens = await cleanupExpiredTokens();
@@ -162,31 +163,32 @@ const cleanupInterval = setInterval(async () => {
   } catch (error) {
     logger.error('Cleanup error', { error });
   }
-}, 60 * 60 * 1000); // 1 hour
+  }, 60 * 60 * 1000); // 1 hour
 
-// Graceful shutdown
-const shutdown = async () => {
-  logger.info('Shutdown signal received: cleaning up');
-  clearInterval(cleanupInterval);
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info('Shutdown signal received: cleaning up');
+    clearInterval(cleanupInterval);
 
-  // Final cleanup before shutdown
-  try {
-    const sessions = await cleanupExpiredSessions();
-    const tokens = await cleanupExpiredTokens();
+    // Final cleanup before shutdown
+    try {
+      const sessions = await cleanupExpiredSessions();
+      const tokens = await cleanupExpiredTokens();
 
-    logger.info('Final cleanup completed', {
-      sessions,
-      verificationTokens: tokens.verificationTokens,
-      passwordResetTokens: tokens.passwordResetTokens,
-    });
-  } catch (error) {
-    logger.error('Final cleanup error', { error });
-  }
+      logger.info('Final cleanup completed', {
+        sessions,
+        verificationTokens: tokens.verificationTokens,
+        passwordResetTokens: tokens.passwordResetTokens,
+      });
+    } catch (error) {
+      logger.error('Final cleanup error', { error });
+    }
 
-  process.exit(0);
-};
+    process.exit(0);
+  };
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
 
 export default app;

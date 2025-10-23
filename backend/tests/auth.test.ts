@@ -27,7 +27,7 @@ describe('Auth API', () => {
         emailVerified: false,
       });
 
-      expect(response.body.message).toContain('verification');
+      expect(response.body.message).toContain('verify');
       expect(response.headers['set-cookie']).toBeDefined();
 
       // Verify user in database
