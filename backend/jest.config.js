@@ -8,7 +8,7 @@ module.exports = {
     '^.+\\.js$': 'babel-jest'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!@oslojs)'
+    'node_modules/(?!(@oslojs|express-request-id))'
   ],
   collectCoverageFrom: [
     'src/**/*.ts',
