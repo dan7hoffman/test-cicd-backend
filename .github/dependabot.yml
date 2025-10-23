@@ -16,7 +16,8 @@ updates:
       prefix: "chore"
       include: "scope"
 
-    # Group dependencies by type
+    # Group dependencies by type (only patch and minor updates)
+    # Major version updates will create individual PRs for careful review
     groups:
       production-dependencies:
         patterns:
@@ -27,6 +28,9 @@ updates:
           - "jest*"
           - "typescript"
           - "tsx"
+        update-types:
+          - "minor"
+          - "patch"
 
       development-dependencies:
         patterns:
@@ -35,6 +39,9 @@ updates:
           - "jest*"
           - "typescript"
           - "tsx"
+        update-types:
+          - "minor"
+          - "patch"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
