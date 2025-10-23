@@ -1,5 +1,8 @@
 # Backend API
 
+[![CI](https://github.com/dan7hoffman/test-cicd-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/dan7hoffman/test-cicd-backend/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/dan7hoffman/test-cicd-backend/actions/workflows/codeql.yml/badge.svg)](https://github.com/dan7hoffman/test-cicd-backend/actions/workflows/codeql.yml)
+
 Modern authentication backend built with Express, TypeScript, and Prisma.
 
 ## Features
@@ -25,6 +28,7 @@ Modern authentication backend built with Express, TypeScript, and Prisma.
 - **Validation**: Zod
 - **Testing**: Jest + Supertest
 - **Email**: Nodemailer
+- **CI/CD**: GitHub Actions (CI, CodeQL, Dependabot)
 
 ## Getting Started
 
@@ -43,9 +47,14 @@ npm install
 
 ### Database Setup
 
-The database schema is already pushed. To reset:
+Run migrations to create database schema:
 ```bash
-npx prisma db push --accept-data-loss
+npx prisma migrate deploy
+```
+
+For development, create new migrations:
+```bash
+npx prisma migrate dev --name describe_your_changes
 ```
 
 ### Seed Demo Users
@@ -117,6 +126,34 @@ npm start
 - Rate limiting: 5 req/15min on auth endpoints
 - Email enumeration prevention
 - Password requirements: 12+ chars, upper, lower, number, special
+
+## CI/CD Pipeline
+
+This project includes a comprehensive CI/CD setup powered by GitHub Actions:
+
+### Continuous Integration (CI)
+- **Automated Testing**: Runs all 17 integration tests on every push
+- **Build Validation**: Ensures TypeScript compiles without errors
+- **Lint Checks**: Validates code quality and type safety
+- **Database Testing**: Tests against PostgreSQL 16 and Redis 7
+- **Fast Execution**: Complete pipeline runs in ~1 minute
+
+### Security Scanning
+- **CodeQL Analysis**: Weekly security scans for vulnerabilities
+- **OWASP Top 10**: Automated detection of common security issues
+- **Dependency Audits**: npm audit runs on every CI build
+
+### Dependency Management
+- **Dependabot**: Automated dependency update PRs
+- **Grouped Updates**: Related dependencies updated together
+- **Security Patches**: Automatic alerts for vulnerable packages
+
+### Workflow Files
+- `.github/workflows/ci.yml` - Main CI pipeline
+- `.github/workflows/codeql.yml` - Security scanning
+- `.github/dependabot.yml` - Dependency updates
+
+See `.github/workflows/README.md` for detailed CI/CD documentation.
 
 ## Environment Variables
 
